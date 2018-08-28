@@ -1,0 +1,23 @@
+1. 
+val textFile = sc.textFile("hdfs://localhost:9000/TravelData.txt")
+val split = textFile.map(lines=>lines.split('\t')).map(x=>(x(2),1)).reduceByKey(_+_).map(item => item.swap).sortByKey(false).take(20)
+
+
+
+2. 
+val textFile = sc.textFile("hdfs://localhost:9000/TravelData.txt")
+val split = textFile.map(lines=>lines.split('\t')).map(x=>(x(1),1)).reduceByKey(_+_).map(item => item.swap).sortByKey(false).take(20)
+
+
+3.
+val textFile = sc.textFile("hdfs://localhost:9000/TravelData.txt")
+val fil = textFile.map(x=>x.split('\t')).filter(x=>{if((x(3).matches(("1")))) true else false })
+val cnt = fil.map(x=>(x(2),1)).reduceByKey(_+_).map(item => item.swap).sortByKey(false).take(20)
+
+
+4.
+val lines = sc.textFile("hdfs://localhost:9000/TravelData.txt")
+val count = lines.count()
+
+5.
+val textFile = sc.textFile("hdfs://localhost:9000/540_m5_EMPSAL_v1.0.txt")

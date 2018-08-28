@@ -1,0 +1,42 @@
+1. 
+class Quicksort {
+    def sort(a:Array[Int]): Array[Int] =   
+        if (a.length < 2) a
+        else {
+            val pivot = a(a.length / 2)
+            sort (a filter (pivot>)) ++ (a filter (pivot == )) ++
+                sort (a filter(pivot <))
+        }
+}
+
+
+
+object Test {
+  def main(args: Array[String]) = {
+    val quicksort = new Quicksort
+    val a = Array(5, 3, 2, 1, 9)
+    quicksort.sort(a).foreach(n=> (print(n), print (" " )))
+ 
+  }
+}
+
+2.  
+
+def isPrime1(n: Int): Boolean = ! ((2 until n-1) exists (n % _ == 0))
+(1 to 10).foreach(i => if (isPrime(i)) println("%d is prime.".format(i)))
+
+3.
+
+val f = new File("/tmp/example.txt")
+f.text = "hello world"
+
+4. 
+val salaries = Seq(20000, 70000, 40000)
+val newSalaries = salaries.map(_ * 2)
+
+case class WeeklyWeatherForecast(temperatures: Seq[Double]) {
+
+  private def convertCtoF(temp: Double) = temp * 1.8 + 32
+
+  def forecastInFahrenheit: Seq[Double] = temperatures.map(convertCtoF) 
+}

@@ -1,0 +1,80 @@
+
+mysql> create database US_Election;
+mysql> use US_Election;
+
+mysql> create table county_data( fips varchar(256),area_name varchar(256),state_abbreviation varchar(256),PST045214 varchar(256),PST040210 varchar(256), PST120214 varchar(256),POP010210 varchar(256),AGE135214 varchar(256),AGE295214 varchar(256),AGE775214 varchar(256),SEX255214 varchar(256),RHI125214 varchar(256),RHI225214 varchar(256), RHI325214 varchar(256), RHI425214 varchar(256),RHI525214 varchar(256),RHI625214 varchar(256),RHI725214 varchar(256),RHI825214 varchar(256),POP715213 varchar(256),POP645213 varchar(256),POP815213 varchar(256),EDU635213 varchar(256),EDU685213 varchar(256), VET605213 varchar(256),LFE305213 varchar(256),HSG010214 varchar(256),HSG445213 varchar(256),HSG096213 varchar(256),HSG495213 varchar(256),HSD410213 varchar(256),HSD310213 varchar(256),INC910213 varchar(256),INC110213 varchar(256),PVY020213 varchar(256),BZA010213 varchar(256),BZA110213 varchar(256),BZA115213 varchar(256),NES010213 varchar(256), SBO001207 varchar(256),SBO315207 varchar(256),SBO115207 varchar(256),SBO215207 varchar(256),SBO515207 varchar(256),SBO415207 varchar(256),SBO015207 varchar(256),MAN450207 varchar(256),WTN220207 varchar(256),RTN130207 varchar(256),RTN131207 varchar(256),AFN120207 varchar(256),BPS030214 varchar(256),LND110210 varchar(256),POP060210 varchar(256) );
+
+
+mysql> LOAD DATA LOCAL INFILE 'c:/data/475_m3_county_facts.csv'
+    -> INTO TABLE county_data
+    -> FIELDS TERMINATED BY ','
+    -> OPTIONALLY ENCLOSED BY '"'
+    -> LINES TERMINATED BY '\n'
+    -> IGNORE 1 ROWS;
+Query OK, 3195 rows affected (0.17 sec)
+Records: 3195  Deleted: 0  Skipped: 0  Warnings: 0
+
+mysql> select count(*) from county_data;
++----------+
+| count(*) |
++----------+
+|     3195 |
++----------+
+1 row in set (0.00 sec)
+
+
+$ sqoop import --connect jdbc:mysql://localhost:3306/US_Election --username root --password password --table county_data --m 1 --num-mappers 1 --target-dir /user/hduser/county_data1
+
+$ sqoop import --connect jdbc:mysql://localhost:3306/US_Election --username root --password password --table county_data --m 3 --num-mappers 1 --target-dir /user/hduser/county_data3
+
+mysql> delete from county_data;
+
+$ sqoop export --connect jdbc:mysql://localhost:3306/US_Election --username root --password password --table county_data --export-dir /user/hduser/county_data1 
+
+
+mysql> create table county_data_2( fips varchar(256),area_name varchar(256),state_abbreviation varchar(256),PST045214 varchar(256),PST040210 varchar(256), PST120214 varchar(256),POP010210 varchar(256),AGE135214 varchar(256),AGE295214 varchar(256),AGE775214 varchar(256),SEX255214 varchar(256),RHI125214 varchar(256),RHI225214 varchar(256), RHI325214 varchar(256), RHI425214 varchar(256),RHI525214 varchar(256),RHI625214 varchar(256),RHI725214 varchar(256),RHI825214 varchar(256),POP715213 varchar(256),POP645213 varchar(256),POP815213 varchar(256),EDU635213 varchar(256),EDU685213 varchar(256), VET605213 varchar(256),LFE305213 varchar(256),HSG010214 varchar(256),HSG445213 varchar(256),HSG096213 varchar(256),HSG495213 varchar(256),HSD410213 varchar(256),HSD310213 varchar(256),INC910213 varchar(256),INC110213 varchar(256),PVY020213 varchar(256),BZA010213 varchar(256),BZA110213 varchar(256),BZA115213 varchar(256),NES010213 varchar(256), SBO001207 varchar(256),SBO315207 varchar(256),SBO115207 varchar(256),SBO215207 varchar(256),SBO515207 varchar(256),SBO415207 varchar(256),SBO015207 varchar(256),MAN450207 varchar(256),WTN220207 varchar(256),RTN130207 varchar(256),RTN131207 varchar(256),AFN120207 varchar(256),BPS030214 varchar(256),LND110210 varchar(256),POP060210 varchar(256) );
+
+$ sqoop export --connect jdbc:mysql://localhost:3306/US_Election --username root --password password --table county_data_2 --export-dir /user/hduser/county_data3 
+
+mysql> create database test;
+mysql> use test;
+
+mysql> CREATE TABLE IF NOT EXISTS users (
+    ->     user_id INT AUTO_INCREMENT,
+    ->     first_name VARCHAR(255) NOT NULL,
+    ->     last_name VARCHAR(255) NOT NULL,
+    ->   age int(2),
+    ->     PRIMARY KEY (user_id)
+    -> )  ENGINE=INNODB;
+Query OK, 0 rows affected (0.03 sec)
+
+
+
+mysql> CREATE TABLE IF NOT EXISTS tasks (
+    ->     task_id INT AUTO_INCREMENT,
+    ->     title VARCHAR(255) NOT NULL,
+    ->     start_date DATE,
+    ->     due_date DATE,
+    ->     status TINYINT NOT NULL,
+    ->     priority TINYINT NOT NULL,
+    ->     description TEXT,
+    ->     PRIMARY KEY (task_id)
+    -> )  ENGINE=INNODB;
+Query OK, 0 rows affected (0.03 sec)
+
+
+
+mysql> CREATE TABLE IF NOT EXISTS employee (
+    ->     employee_id INT AUTO_INCREMENT,
+    ->     first_name VARCHAR(255) NOT NULL,
+    ->     last_name VARCHAR(255) NOT NULL,
+    ->   age int(2),
+    ->   salary int(5),
+    ->     PRIMARY KEY (employee_id)
+    -> )  ENGINE=INNODB;
+Query OK, 0 rows affected (0.03 sec)
+
+
+$ sqoop import-all-tables --connect jdbc:mysql://localhost:3306/test --username root --password password --warehouse-dir /user/hduser/test
+
+

@@ -1,0 +1,45 @@
+##Configuring Components
+a1.sources=source1
+a1.channels=channel1
+a1.sinks=sink1
+
+## Configuring Source
+a1.sources.source1.channels=channel1
+a1.sources.source1.type=netcat
+a1.sources.source1.bind=127.0.0.1
+a1.sources.source1.port=44444
+
+## Configuring Channel
+a1.channels.channel1.type=memory
+a1.channels.channel1.capacity=10000
+a1.channels.channel1.transactionCapacity=1000
+
+## Configuring Sink
+a1.sinks.sink1.type=org.apache.flume.sink.kafka.KafkaSink
+a1.sinks.sink1.topic=testing2
+a1.sinks.sink1.zookeeperConnect=ip-127.0.0.1:2181
+a1.sinks.sink1.brokerList=127.0.0.1:9092
+a1.sinks.sink1.channel=channel1
+a1.sinks.sink1.batchSize=20
+
+
+
+sh bin/flume-ng agent --conf conf --conf-file conf/flume-sample.conf  -Dflume.root.logger=DEBUG,console --name a1 -Xmx512m -Xms256m
+
+Execute the following commands: 
+
+START Zookepper ->  sudo bin/zookeeper-server-start.sh config/zookeeper.properties
+
+START Kafka Server -> sudo bin/kafka-server-start.sh config/server.properties
+
+CREATE TOPIC - bin/kafka-topics.sh --zookeeper 127.0.0.1:2181 --create --replication-factor 1 --partitions 1 --topic testing2
+
+START CONSUMER -> bin/kafka-console-consumer.sh --zookeeper 127.0.0.1:2181 --topic testing2 --from-beginning
+
+
+ $ nc localhost 44444
+ Hello i am badal !!! 
+ 
+
+
+

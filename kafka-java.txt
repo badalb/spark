@@ -1,0 +1,126 @@
+$ sudo bin/zookeeper-server-start.sh config/zookeeper.properties
+$ sudo bin/kafka-server-start.sh config/server.properties
+
+$ bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test
+
+
+application.properties
+
+kafka.topic.name=test
+
+
+@Configuration
+public class KafkaProducerConfig {
+ 
+    @Bean
+    public ProducerFactory<String, String> producerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(
+          ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, 
+          bootstrapAddress);
+        configProps.put(
+          ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, 
+          StringSerializer.class);
+        configProps.put(
+          ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, 
+          StringSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+ 
+    @Bean
+    public KafkaTemplate<String, String> kafkaTemplate() {
+        return new KafkaTemplate<>(producerFactory());
+    }
+}
+
+
+public class Producer {
+
+@Value("{kafka.topic.name}")
+private String topicName;
+
+@Autowired
+private KafkaTemplate<String, String> kafkaTemplate;
+ 
+public void sendMessage(String msg) {
+    kafkaTemplate.send(topicName, msg);
+}
+
+}
+
+@EnableKafka
+@Configuration
+public class KafkaConsumerConfig {
+ 
+    @Bean
+    public ConsumerFactory<String, String> consumerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(
+          ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, 
+          bootstrapAddress);
+        props.put(
+          ConsumerConfig.GROUP_ID_CONFIG, 
+          groupId);
+        props.put(
+          ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, 
+          StringDeserializer.class);
+        props.put(
+          ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, 
+          StringDeserializer.class);
+        return new DefaultKafkaConsumerFactory<>(props);
+    }
+ 
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String> 
+      kafkaListenerContainerFactory() {
+    
+        ConcurrentKafkaListenerContainerFactory<String, String> factory
+          = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory());
+        return factory;
+    }
+}
+
+
+public class Consumer {
+	
+@KafkaListener(topics = "test")
+public void listenWithHeaders(
+  @Payload String message, 
+  @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition) {
+      System.out.println(
+        "Received Message: " + message"
+        + "from partition: " + partition);
+}
+
+}
+
+@SpringBootApplication
+public class KafkaApplication {
+
+    public static void main(String[] args) throws Exception {
+
+        ConfigurableApplicationContext context = SpringApplication.run(KafkaApplication.class, args);
+
+        MessageProducer producer = context.getBean(MessageProducer.class);
+        MessageListener listener = context.getBean(MessageListener.class);
+       
+        producer.sendMessage("Hello, World!");
+        listener.latch.await(10, TimeUnit.SECONDS);
+
+        
+        for (int i = 0; i < 5; i++) {
+            producer.sendMessageToPartion("Hello To Partioned Topic!", i);
+        }
+        listener.partitionLatch.await(10, TimeUnit.SECONDS);
+
+        producer.sendMessageToFiltered("Hello Baeldung!");
+        producer.sendMessageToFiltered("Hello World!");
+        listener.filterLatch.await(10, TimeUnit.SECONDS);
+        producer.sendGreetingMessage(new Greeting("Greetings", "World!"));
+        listener.greetingLatch.await(10, TimeUnit.SECONDS);
+
+        context.close();
+    }
+ }
+

@@ -21,3 +21,17 @@ val count = lines.count()
 
 5.
 val textFile = sc.textFile("hdfs://localhost:9000/540_m5_EMPSAL_v1.0.txt")
+
+6.
+
+case class Dept(dept_name : String, Salary : Int)
+
+val sc = new SparkContext(new SparkConf().setAppName("Salary").setMaster("local[2]"))
+val sq = new SQLContext(sc)
+
+import sq.implicits._
+val file = "resources/ip.csv"
+val data = sc.textFile(file).map(_.split(","))
+val recs = data.map(r => Dept(r(0), r(1).toInt )).toDS()
+recs.groupBy($"dept_name").agg(max("Salary").alias("max_solution")).show()
+recs.groupBy($"dept_name").agg(min("Salary").alias("min_solution")).show()
